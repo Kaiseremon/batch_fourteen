@@ -1,0 +1,652 @@
+{
+	"info": {
+		"_postman_id": "80368aec-7224-4481-afb1-767b0867ad74",
+		"name": "API_Automation_RESTfulBrooker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13893596",
+		"_collection_link": "https://kaiser-1748.postman.co/workspace/SQA-B14~78818562-6975-4bfc-aaab-7c17dec41910/collection/13893596-80368aec-7224-4481-afb1-767b0867ad74?action=share&source=collection_link&creator=13893596"
+	},
+	"item": [
+		{
+			"name": "Create Auth Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check Status Code:\r",
+							"pm.test(\"TCS-1: Validate whether the Create Auth Token API Status Code is (200/201)\", ()=>{\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"})\r",
+							"\t\r",
+							"//Check Status Message:\r",
+							"pm.test(\"TCS-2: Validate whether the Create Auth Token API Status Message is (OK)\", ()=>{\r",
+							"   \tpm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Check the Response time:\r",
+							"pm.test(\"TCS-3: Verify the response time is less than 2 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"//Save the Token ID for the next API chains:\r",
+							"var responseBody = pm.response.json();\r",
+							"if (responseBody.token){\r",
+							"    pm.collectionVariables.set(\"token\", responseBody.token);\r",
+							"} else {\r",
+							"    pm.collectionVariables.set(\"token\", 0);\r",
+							"}\r",
+							"pm.test(\"TCS-4: Verify whether the Token ID is Saved for the next Chain\", function () {\r",
+							"    try {\r",
+							"        pm.expect(pm.collectionVariables.get(\"token\")).not.equal(0).and.not.be.empty;\r",
+							"        pm.expect(pm.collectionVariables.get(\"token\")!= undefined);\r",
+							"    } catch(e){\r",
+							"        pm.expect.fail(\"Reason = \" + e.message);\r",
+							"    }\r",
+							"});\r",
+							"console.log(`Token Received: ${pm.collectionVariables.get(\"token\")}`);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"admin\", \"password\": \"password123\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://restful-booker.herokuapp.com/auth",
+					"protocol": "https",
+					"host": [
+						"restful-booker",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a Booking",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Create Random First Name & Last Name:\r",
+							"    const firstNames \t= [\"Kaiser\", \"Habib\", \"Rahim\", \"Karim\", \"Arif\", \"Siam\"];\r",
+							"    const lastNames     = [\"Ahmed\", \"Hossain\", \"Uddin\", \"Khan\", \"Sheikh\"];\r",
+							"    pm.collectionVariables.set(\"first_name\", firstNames[Math.floor(Math.random() * firstNames.length)]);\r",
+							"    pm.collectionVariables.set(\"last_name\", lastNames[Math.floor(Math.random() * lastNames.length)]);\r",
+							"\r",
+							"//Create Random Price:\r",
+							"function rand (min, max) {return Math.floor(Math.random() * (max - min + 1)) + min;}\r",
+							"pm.collectionVariables.set(\"total_price\", rand(18, 65));\r",
+							"\r",
+							"//Put everything in a Postman Collection variable for dynamicity:\r",
+							"var dynamicBody = {\r",
+							"    \"firstname\"\t    : pm.collectionVariables.get(\"first_name\"),\r",
+							"  \t\"lastname\"\t    : pm.collectionVariables.get(\"last_name\"),\r",
+							"  \t\"totalprice\"\t: pm.collectionVariables.get(\"total_price\"),\r",
+							"  \t\"depositpaid\"\t: true,\r",
+							"  \t\"bookingdates\"\t: {\r",
+							"    \t\t\t\"checkin\"   : \"2025-01-01\",\r",
+							"    \t\t\t\"checkout\"  : \"2025-01-05\"\r",
+							"  \t},\r",
+							"  \t\"additionalneeds\": \"Breakfast\"\r",
+							"};\r",
+							"pm.collectionVariables.set(\"payload\", JSON.stringify(dynamicBody));\r",
+							"//pm.request.body.raw = JSON.stringify(dynamicBody);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check the Response Status Code:\r",
+							"pm.test(\"TCS-5: Validate whether the Create Booking API Status Code is (200/201)\", ()=>{\r",
+							"\tpm.expect([200, 201]).to.contain(pm.response.code);\r",
+							"});\r",
+							"\r",
+							"//Check the Response Status Message:\r",
+							"pm.test(\"TCS-6: Validate whether the Create Booking API Status Message is (OK)\", ()=>{\r",
+							"   \tpm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Check the Response time:\r",
+							"pm.test(\"TCS-7: Verify whether the response time of the API is less than 2 second\", ()=> {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"//Validate the Expected Vs Actual Booking credentials:\r",
+							"var responseBody = pm.response.json();\r",
+							"pm.test(\"TCS-7: Verify whether the Actual Booking Credentials is as Expected\", function () {\r",
+							"\tpm.expect (responseBody.booking.firstname).to.equal(pm.collectionVariables.get(\"first_name\"));\r",
+							"\tpm.expect (responseBody.booking.lastname).to.equal(pm.collectionVariables.get(\"last_name\"));\r",
+							"});\r",
+							"\r",
+							"//Save the Booking ID for the next API Request:\r",
+							"var responseBody = pm.response.json();\r",
+							"if (responseBody.bookingid || responseBody.bookingId) {\r",
+							"\tpm.collectionVariables.set(\"booking_id\", responseBody.bookingid || responseBody.bookingId);\r",
+							"} else {\r",
+							"       \tpm.collectionVariables.set(\"booking_id\", 0);\r",
+							"}\r",
+							"console.log(`Booking ID: ${pm.collectionVariables.get(\"booking_id\")}`);\r",
+							"\r",
+							"// Check the Booking ID is saved for the Next Request Chains:\r",
+							"pm.test(\"TCS-8: Verify whether the Booking ID is provided and Saved for the next Chain\", () => {\r",
+							"    const bookingId = pm.collectionVariables.get(\"booking_id\");\r",
+							"    pm.expect(bookingId).to.exist.and.to.be.a(\"number\").and.to.be.greaterThan(0);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{payload}}\r\n\r\n/*\r\n{\r\n    \"firstname\": \"Jim\", \r\n    \"lastname\": \"Brown\", \r\n    \"totalprice\": 111, \r\n    \"depositpaid\": true,\r\n    \"bookingdates\": {\r\n        \"checkin\":\"2018-01-01\",\r\n        \"checkout\":\"2019-01-01\"\r\n        },\r\n    \"additionalneeds\": \"Dinner\"\r\n}\r\n*/\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://restful-booker.herokuapp.com/booking",
+					"protocol": "https",
+					"host": [
+						"restful-booker",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"booking"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Booking Data",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Check whether the booking_id exists before invoking the request\r",
+							"if (!pm.collectionVariables.get(\"booking_id\")) {\r",
+							"    throw new Error(\"bookingId missing\");\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check the Response Status Code:\r",
+							"pm.test(\"TCS-9: Validate whether the Get Bookings API Status Code is (200)\", ()=>{\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"//Check the Response Status Message:\r",
+							"pm.test(\"TCS-10: Validate whether the Get Bookings API Status Message is (OK)\", ()=>{\r",
+							"   \tpm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Check the Response time:\r",
+							"pm.test(\"TCS-11: Verify whether the response time of the API is less than 2 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"//Validate the Expected Vs Actual Booking credentials:\r",
+							"var responseBody = pm.response.json();\r",
+							"pm.test(\"TCS-12: Verify whether the Actual Booking Credentials is as Expected\", function () {\r",
+							"\tpm.expect(responseBody.firstname).to.equal(pm.collectionVariables.get(\"first_name\"));\r",
+							"\tpm.expect(responseBody.lastname).to.equal(pm.collectionVariables.get(\"last_name\"));\r",
+							"    pm.expect(responseBody.totalprice).to.equal(pm.collectionVariables.get(\"total_price\"));\r",
+							" \tpm.expect(responseBody.firstname != undefined);\r",
+							"    pm.expect(responseBody.lastname != undefined);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://restful-booker.herokuapp.com/booking/:id",
+					"protocol": "https",
+					"host": [
+						"restful-booker",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"booking",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{booking_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Full Update a Booking",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Create Random First Name & Last Name:\r",
+							"    const firstNames \t= [\"Kaiser\", \"Habib\", \"Rahim\", \"Karim\", \"Arif\", \"Siam\"];\r",
+							"    const lastNames     = [\"Ahmed\", \"Hossain\", \"Uddin\", \"Khan\", \"Sheikh\"];\r",
+							"    pm.collectionVariables.set(\"first_name\", firstNames[Math.floor(Math.random() * firstNames.length)]);\r",
+							"    pm.collectionVariables.set(\"last_name\", lastNames[Math.floor(Math.random() * lastNames.length)]);\r",
+							"\r",
+							"//Create Random Price:\r",
+							"function rand (min, max) {return Math.floor(Math.random() * (max - min + 1)) + min;}\r",
+							"pm.collectionVariables.set(\"total_price\", rand(18, 65));\r",
+							"\r",
+							"//Put everything in a Postman Collection variable for dynamicity:\r",
+							"var dynamicBody = {\r",
+							"    \"firstname\"\t    : pm.collectionVariables.get(\"first_name\"),\r",
+							"  \t\"lastname\"\t    : pm.collectionVariables.get(\"last_name\"),\r",
+							"  \t\"totalprice\"\t: 999,\r",
+							"  \t\"depositpaid\"\t: true,\r",
+							"  \t\"bookingdates\"\t: {\r",
+							"    \t\t\t\"checkin\"   : \"2025-01-01\",\r",
+							"    \t\t\t\"checkout\"  : \"2025-01-05\"\r",
+							"  \t},\r",
+							"  \t\"additionalneeds\": \"Breakfast\"\r",
+							"};\r",
+							"pm.collectionVariables.set(\"payload\", JSON.stringify(dynamicBody));\r",
+							"//pm.request.body.raw = JSON.stringify(dynamicBody);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check the Response Status Code:\r",
+							"pm.test(\"TCS-13: Validate whether the Update Booking API Status Code is (200/201)\", ()=>{\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"    //pm.expect([200, 201]).to.contain(pm.response.code);});\r",
+							"});\r",
+							"\t\t\r",
+							"//Check the Response Status Message:\r",
+							"pm.test(\"TCS-14: Validate whether the Update Booking API Status Message is (OK)\", ()=>{\r",
+							"   \tpm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Check the Response time:\r",
+							"pm.test(\"TCS-15: Verify whether the response time of the API is less than 2 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"//Check whether the Booking Credentials Updated correctly (Expected Vs Actual Data):\r",
+							"var responseBody = pm.response.json();\r",
+							"pm.test (\"TCS-16: Verify whether the Actual Updated Booking Credentials is as Expected\", () => {\r",
+							"    const expectedFirstName = pm.collectionVariables.get(\"first_name\");\r",
+							"    const expectedLastName  = pm.collectionVariables.get(\"last_name\");\r",
+							"    pm.expect(responseBody.firstname.toString().trim(), \"Firstname mismatch\").to.equal(expectedFirstName);\r",
+							"    pm.expect(responseBody.lastname.toString().trim(), \"Lastname mismatch\").to.equal(expectedLastName);\r",
+							"    pm.expect(responseBody.totalprice, \"Price mismatch\").to.equal(999);    \r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Cookie",
+						"value": "token={{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{payload}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://restful-booker.herokuapp.com/booking/:id",
+					"protocol": "https",
+					"host": [
+						"restful-booker",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"booking",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{booking_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Partial Update a Booking",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Check whether the booking_id exists before invoking the request\r",
+							"if (!pm.collectionVariables.get(\"booking_id\")) {\r",
+							"    throw new Error(\"bookingId missing\");\r",
+							"}\r",
+							"\r",
+							"//Create Random First Name & Last Name:\r",
+							"    const firstNames \t= [\"Kaiser\", \"Habib\", \"Rahim\", \"Karim\", \"Arif\", \"Siam\"];\r",
+							"    const lastNames     = [\"Ahmed\", \"Hossain\", \"Uddin\", \"Khan\", \"Sheikh\"];\r",
+							"    pm.collectionVariables.set(\"first_name\", firstNames[Math.floor(Math.random() * firstNames.length)]);\r",
+							"    pm.collectionVariables.set(\"last_name\", lastNames[Math.floor(Math.random() * lastNames.length)]);\r",
+							"\r",
+							"//Create Random Price:\r",
+							"function rand (min, max) {return Math.floor(Math.random() * (max - min + 1)) + min;}\r",
+							"pm.collectionVariables.set(\"total_price\", rand(18, 65));\r",
+							"\r",
+							"//Put everything in a Postman Collection variable for dynamicity:\r",
+							"var dynamicBody = {\r",
+							"    \"firstname\"\t    : \"Updated \" + pm.collectionVariables.get(\"first_name\"),\r",
+							"  \t\"lastname\"\t    : \"Updated \" + pm.collectionVariables.get(\"last_name\"),\r",
+							"  \t\"totalprice\"\t: 777\r",
+							"};\r",
+							"pm.collectionVariables.set(\"updated_payload\", JSON.stringify(dynamicBody));\r",
+							"//pm.request.body.raw = JSON.stringify(dynamicBody);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check the Response Status Code:\r",
+							"pm.test(\"TCS-17: Validate whether the Update Booking API Status Code is (200/201)\", ()=>{\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"\t//pm.expect([200, 201]).to.contain(pm.response.code);\r",
+							"})\r",
+							"\r",
+							"//Check the Response Status Message:\r",
+							"pm.test(\"TCS-18: Validate whether the Update Booking API Status Message is (OK)\", ()=>{\r",
+							"\tpm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"\r",
+							"//Check the Response time:\r",
+							"pm.test(\"TCS-19: Verify whether the response time of the API is less than 2 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"//Check whether the Booking Credentials Updated correctly (Expected Vs Actual Data):\r",
+							"var responseBody = pm.response.json();\r",
+							"pm.test (\"TCS-20: Check whether the Booking Updated correctly (Expected Vs Actual Data)\", () => {\r",
+							"    pm.expect(responseBody.firstname.includes(\"Updated \" + pm.collectionVariables.get(\"first_name\")))\r",
+							"    pm.expect(responseBody.lastname.includes(\"Updated \" + pm.collectionVariables.get(\"last_name\")))\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Cookie",
+						"value": "token={{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{updated_payload}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://restful-booker.herokuapp.com/booking/:id",
+					"protocol": "https",
+					"host": [
+						"restful-booker",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"booking",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{booking_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete an Existing Booking",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Check whether the booking_id exists before invoking the request\r",
+							"if (!pm.collectionVariables.get(\"booking_id\")) {\r",
+							"    throw new Error(\"bookingId missing\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Check the Response Status Code:\r",
+							"pm.test(\"TCS-21: Validate whether the Delete Booking API Status Code is (200/201)\", ()=>{\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"});\r",
+							"\r",
+							"//Check the Response Status Message:\r",
+							"pm.test(\"TCS-22: Validate whether the Delete Booking API Status Message is (OK)\", ()=>{\r",
+							"\tpm.expect(pm.response.status).to.equal(\"Created\");\r",
+							"});\r",
+							"\r",
+							"//Check the Response time:\r",
+							"pm.test(\"TCS-23: Verify whether the response time of the API is less than 2 second\", function () {\r",
+							"    \t\tpm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "token={{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://restful-booker.herokuapp.com/booking/:id",
+					"protocol": "https",
+					"host": [
+						"restful-booker",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"booking",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{booking_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "first_name",
+			"value": ""
+		},
+		{
+			"key": "last_name",
+			"value": ""
+		},
+		{
+			"key": "total_price",
+			"value": ""
+		},
+		{
+			"key": "payload",
+			"value": ""
+		},
+		{
+			"key": "booking_id",
+			"value": ""
+		},
+		{
+			"key": "updated_payload",
+			"value": ""
+		}
+	]
+}

@@ -1,0 +1,807 @@
+{
+	"info": {
+		"_postman_id": "483ce4b8-2ecc-4964-b614-8f0d928712f9",
+		"name": "API_Automation_EverShop_AddToCart",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13893596",
+		"_collection_link": "https://kaiser-1748.postman.co/workspace/SQA-B14~78818562-6975-4bfc-aaab-7c17dec41910/collection/13893596-483ce4b8-2ecc-4964-b614-8f0d928712f9?action=share&source=collection_link&creator=13893596"
+	},
+	"item": [
+		{
+			"name": "Search",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//List of available Product--------------------------------------------------------\r",
+							"const keywordList = [\"Stainless\", \"Modern Ceramic\", \"Ceramic\", \"Desk\"];\r",
+							"//---------------------------------------------------------------------------------\r",
+							"\r",
+							"//Create a random function to pick random value------------------------------------\r",
+							"function getRandomInt(min, max) {\r",
+							"  min = Math.ceil(min); // Ensure min is an integer\r",
+							"  max = Math.floor(max); // Ensure max is an integer\r",
+							"  return Math.floor(Math.random() * (max - min + 1)) + min;\r",
+							"}\r",
+							"//----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Create a variable that will store random number within 0 to 3---------------------\r",
+							"const index = getRandomInt(0,3);\r",
+							"\r",
+							"//Create a variable that will get random product name within the index\r",
+							"const searchKeyword = keywordList[index];\r",
+							"\r",
+							"//Save the random product name in the Postman Collection variable Dynamically-------\r",
+							"pm.collectionVariables.set(\"search_keyword\", searchKeyword);\r",
+							"console.log(`Searched Keyword: ${searchKeyword}`);\r",
+							"//-----------------------------------------------------------------------------------"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Convert the response body into pure JSON object to access properties---------------\r",
+							"var responseBody = pm.response.json();\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status code is 200 or not--------------------------------\r",
+							"pm.test(\"TCS-1: Validate whether the Search API Status Code is (200)\", ()=>{\r",
+							"    pm.expect(200).to.equal(pm.response.code);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status is ok or not--------------------------------------\r",
+							"pm.test(\"TCS-2: Validate whether the SEARCH API Status Message is (OK)\", ()=>{\r",
+							"    pm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the request is success or not-----------------------------------------\r",
+							"pm.test(\"TCS-3: Validate whether the SEARCH API request is Success (True)\", ()=>{\r",
+							"    pm.expect(responseBody.success).to.be.true;\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Check the Response time:-----------------------------------------------------------\r",
+							"pm.test(\"TCS-4: Verify the response time is less than 4 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(4000);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test the expected and Actual result------------------------------------------------\r",
+							"const expectedSearchText = pm.collectionVariables.get(\"search_keyword\");\r",
+							"const actaulSearchText = responseBody.eContext.graphqlResponse.e113c071ghmj8fxbm2.keyword;\r",
+							"\r",
+							"pm.test(`TCS-5: Validate whether the search text (${expectedSearchText}) is in current filter/search result`, ()=>{\r",
+							"    pm.expect(expectedSearchText).to.equal(actaulSearchText);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test the Search Result contains the provided keyword ------------------------------\r",
+							"const items = responseBody.eContext.graphqlResponse.e113c071ghmj8fxbm2.products.items;\r",
+							"pm.test(`TCS-6: Validate whether the Search Result contains the provided keyword '${expectedSearchText}'`, ()=>{\r",
+							"    let actualProduct = \"\";    \r",
+							"    for(let i = 0; i < items.length; i++){\r",
+							"        actualProduct = items[i].name;\r",
+							"        pm.expect(actualProduct).to.contains(expectedSearchText);\r",
+							"        console.log(`Search Product '${actualProduct}' have the Keyword '${expectedSearchText}'`)\r",
+							"    }\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Get ANY Product SKU to add to the cart---------------------------------------------\r",
+							"const productSKU = items[0].sku;\r",
+							"pm.collectionVariables.set(\"product_sku\", productSKU);\r",
+							"//-----------------------------------------------------------------------------------\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.5"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Referer",
+						"value": "https://demo.evershop.io/accessories"
+					},
+					{
+						"key": "Cookie",
+						"value": "sid=s%3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827%2F74jYjy%2BNpOqKGuigFluhQj8dPBmrLweIYR8Y"
+					},
+					{
+						"key": "Upgrade-Insecure-Requests",
+						"value": "1"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "document"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "navigate"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Sec-Fetch-User",
+						"value": "?1"
+					},
+					{
+						"key": "If-None-Match",
+						"value": "W/\"18d4f-3jL+51UngeplSWni8V01nei546E\""
+					},
+					{
+						"key": "Priority",
+						"value": "u=0, i"
+					}
+				],
+				"url": {
+					"raw": "https://demo.evershop.io/search?keyword={{search_keyword}}&ajax=true",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"evershop",
+						"io"
+					],
+					"path": [
+						"search"
+					],
+					"query": [
+						{
+							"key": "keyword",
+							"value": "{{search_keyword}}"
+						},
+						{
+							"key": "ajax",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Generated from cURL: curl.exe ^\"https://demo.evershop.io/search?keyword=Stainless^\" ^\n  -H ^\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0^\" ^\n  -H ^\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8^\" ^\n  -H ^\"Accept-Language: en-US,en;q=0.5^\" ^\n  -H ^\"Accept-Encoding: gzip, deflate, br, zstd^\" ^\n  -H ^\"Connection: keep-alive^\" ^\n  -H ^\"Referer: https://demo.evershop.io/accessories^\" ^\n  -H ^\"Cookie: sid=s^%^3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827^%^2F74jYjy^%^2BNpOqKGuigFluhQj8dPBmrLweIYR8Y^\" ^\n  -H ^\"Upgrade-Insecure-Requests: 1^\" ^\n  -H ^\"Sec-Fetch-Dest: document^\" ^\n  -H ^\"Sec-Fetch-Mode: navigate^\" ^\n  -H ^\"Sec-Fetch-Site: same-origin^\" ^\n  -H ^\"Sec-Fetch-User: ?1^\" ^\n  -H ^\"If-None-Match: W/^\\^\"18d4f-3jL+51UngeplSWni8V01nei546E^\\^\"^\" ^\n  -H ^\"Priority: u=0, i^\""
+			},
+			"response": []
+		},
+		{
+			"name": "pre_viewCart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*Add to cart, includes product with previous quantity.\r",
+							"If no products already in the cart then add to cart will include = 0 + Newly added product.\r",
+							"If products already in the cart then add to cart will include = already product + Newly added product.\r",
+							"Hence to verify 'Add to Cart', we need to check the cart's current status first.*/\r",
+							"\r",
+							"//Convert the response body into pure JSON object to access properties---------------\r",
+							"var responseBody = pm.response.json();\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status code is 200 or not------------------------------//\r",
+							"pm.test(\"TCS-7: Validate whether the PRE_VIEW_CART API Status Code is (200)\", ()=>{\r",
+							"    pm.expect(200).to.equal(pm.response.code);\r",
+							"});\r",
+							"//--------------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status is ok or not--------------------------------------\r",
+							"pm.test(\"TCS-8: Validate whether the PRE_VIEW_CART API Status Message is (OK)\", ()=>{\r",
+							"    pm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Check the Response time:-----------------------------------------------------------\r",
+							"pm.test(\"TCS-9: Verify the response time is less than 3 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Get Current Product Quantity from the cart (pre_ProdQty) to validate add to cart------\r",
+							"//Null Value handler. Set default 0 instead of null for empty cart.\r",
+							"let preCartQty = 0;\r",
+							"try{\r",
+							"    preCartQty = responseBody.eContext.graphqlResponse.e113c071ghmj8fxbn1.totalQty;\r",
+							"}catch(err){\r",
+							"    console.log(\"There is no product in the cart currently\");\r",
+							"    preCartQty = 0;\r",
+							"}\r",
+							"pm.collectionVariables.set(\"pre_cart_qty\", preCartQty);\r",
+							"console.log(`Before Add to cart, Products Already in the cart is: ${preCartQty}`);\r",
+							"//--------------------------------------------------------------------------------------"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.5"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Referer",
+						"value": "https://demo.evershop.io/accessories"
+					},
+					{
+						"key": "Cookie",
+						"value": "sid=s%3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827%2F74jYjy%2BNpOqKGuigFluhQj8dPBmrLweIYR8Y"
+					},
+					{
+						"key": "Upgrade-Insecure-Requests",
+						"value": "1"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "document"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "navigate"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Sec-Fetch-User",
+						"value": "?1"
+					},
+					{
+						"key": "Priority",
+						"value": "u=0, i"
+					}
+				],
+				"url": {
+					"raw": "https://demo.evershop.io/cart?ajax=true",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"evershop",
+						"io"
+					],
+					"path": [
+						"cart"
+					],
+					"query": [
+						{
+							"key": "ajax",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Generated from cURL: curl.exe ^\"https://demo.evershop.io/cart^\" ^\n  -H ^\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0^\" ^\n  -H ^\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8^\" ^\n  -H ^\"Accept-Language: en-US,en;q=0.5^\" ^\n  -H ^\"Accept-Encoding: gzip, deflate, br, zstd^\" ^\n  -H ^\"Connection: keep-alive^\" ^\n  -H ^\"Referer: https://demo.evershop.io/accessories^\" ^\n  -H ^\"Cookie: sid=s^%^3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827^%^2F74jYjy^%^2BNpOqKGuigFluhQj8dPBmrLweIYR8Y^\" ^\n  -H ^\"Upgrade-Insecure-Requests: 1^\" ^\n  -H ^\"Sec-Fetch-Dest: document^\" ^\n  -H ^\"Sec-Fetch-Mode: navigate^\" ^\n  -H ^\"Sec-Fetch-Site: same-origin^\" ^\n  -H ^\"Sec-Fetch-User: ?1^\" ^\n  -H ^\"Priority: u=0, i^\""
+			},
+			"response": []
+		},
+		{
+			"name": "addToCart",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Create a random function to get random product quantity--------------------------------\r",
+							"function getRandomInt(min, max) {\r",
+							"  min = Math.ceil(min); // Ensure min is an integer\r",
+							"  max = Math.floor(max); // Ensure max is an integer\r",
+							"  return Math.floor(Math.random() * (max - min + 1)) + min;\r",
+							"}\r",
+							"//Create a variable to store random number within the given range\r",
+							"const addedProductQty = getRandomInt(1,4);\r",
+							"\r",
+							"//Save this random number dynamically as the product quntity and\r",
+							"//Include the variable name in request body, As Pre-Req scrip runs before the API request execution\r",
+							"pm.collectionVariables.set(\"added_product_qty\", addedProductQty);\r",
+							"console.log(`Product Added to the cart is: ${addedProductQty}`);\r",
+							"//--------------------------------------------------------------------------------------"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*Add to cart, includes product with previous quantity.\r",
+							"If no products already in the cart then add to cart will include = 0 + Newly added product.\r",
+							"If products already in the cart then add to cart will include = already product + Newly added product.\r",
+							"Hence to verify 'Add to Cart', we need to check the cart's current status first.*/\r",
+							"\r",
+							"//Convert the response body into pure JSON object to access properties---------------\r",
+							"const responseBody = pm.response.json();\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"/*Test Whether the response status code is 200 or not------------------------------*/\r",
+							"pm.test(\"TCS-10: Validate whether ADD_TO_CART API Status Code is (200)\", ()=>{\r",
+							"    pm.expect(200).to.equal(pm.response.code);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status is ok or not--------------------------------------\r",
+							"pm.test(\"TCS-11: Validate whether the ADD_TO_CART API Status Message is (OK)\", ()=>{\r",
+							"    pm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Check the Response time:-----------------------------------------------------------\r",
+							"pm.test(\"TCS-12: Verify the response time is less than 3 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Verify the expected/Input and Actual/Outout product SKU----------------------------\r",
+							"pm.test(`TCS-13: Validate whether the Expected/Input and Actual/Output (Product-SKU) matched`, ()=>{\r",
+							"    const expectedSKU = pm.collectionVariables.get(\"product_sku\");\r",
+							"    const actualSKU = responseBody.data.item.product_sku;\r",
+							"    pm.expect(expectedSKU).to.equal(actualSKU);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//verify the expected/Input and Actual/Outout product quantity ----------------------\r",
+							"const expectedQty = pm.collectionVariables.get(\"pre_cart_qty\") + pm.collectionVariables.get(\"added_product_qty\");\r",
+							"const actualQty = responseBody.data.item.qty;\r",
+							"pm.test(`TCS-14: Validate whether the Expected/Input and Actual/Output (Product-QTY) matched`, ()=>{\r",
+							"    pm.expect(expectedQty).to.equal(actualQty);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Dynamically save the current product QTY of cart as the post cart QTY--------------\r",
+							"pm.collectionVariables.set(\"post_cart_qty\", actualQty);\r",
+							"//-----------------------------------------------------------------------------------"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0"
+					},
+					{
+						"key": "Accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.5"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Referer",
+						"value": "https://demo.evershop.io/search?keyword=stainless"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Origin",
+						"value": "https://demo.evershop.io"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Cookie",
+						"value": "sid=s%3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827%2F74jYjy%2BNpOqKGuigFluhQj8dPBmrLweIYR8Y"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "empty"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "cors"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Priority",
+						"value": "u=0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "//{\"sku\":\"THERMO-005-YEL\",\"qty\":1}\r\n{\r\n    \"sku\":\"{{product_sku}}\",\r\n    \"qty\":\"{{added_product_qty}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://demo.evershop.io/api/cart/mine/items?ajax=true",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"evershop",
+						"io"
+					],
+					"path": [
+						"api",
+						"cart",
+						"mine",
+						"items"
+					],
+					"query": [
+						{
+							"key": "ajax",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Generated from cURL: curl.exe ^\"https://demo.evershop.io/api/cart/mine/items^\" ^\n  -X POST ^\n  -H ^\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0^\" ^\n  -H ^\"Accept: */*^\" ^\n  -H ^\"Accept-Language: en-US,en;q=0.5^\" ^\n  -H ^\"Accept-Encoding: gzip, deflate, br, zstd^\" ^\n  -H ^\"Referer: https://demo.evershop.io/search?keyword=stainless^\" ^\n  -H ^\"Content-Type: application/json^\" ^\n  -H ^\"Origin: https://demo.evershop.io^\" ^\n  -H ^\"Connection: keep-alive^\" ^\n  -H ^\"Cookie: sid=s^%^3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827^%^2F74jYjy^%^2BNpOqKGuigFluhQj8dPBmrLweIYR8Y^\" ^\n  -H ^\"Sec-Fetch-Dest: empty^\" ^\n  -H ^\"Sec-Fetch-Mode: cors^\" ^\n  -H ^\"Sec-Fetch-Site: same-origin^\" ^\n  -H ^\"Priority: u=0^\" ^\n  --data-raw ^\"^{^\\^\"sku^\\^\":^\\^\"THERMO-005-YEL^\\^\",^\\^\"qty^\\^\":1^}^\""
+			},
+			"response": []
+		},
+		{
+			"name": "post_viewCart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Convert the response body into pure JSON object to access properties---------------\r",
+							"const responseBody = pm.response.json();\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"/*Test Whether the response status code is 200 or not------------------------------*/\r",
+							"pm.test(\"TCS-15: Validate whether the POST_VIEW_CART API Status Code is (200)\", ()=>{\r",
+							"    pm.expect(200).to.equal(pm.response.code);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status is ok or not--------------------------------------\r",
+							"pm.test(\"TCS-16: Validate whether the POST_VIEW_CART API Status Message is (OK)\", ()=>{\r",
+							"    pm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Check the Response time:-----------------------------------------------------------\r",
+							"pm.test(\"TCS-17: Verify the response time is less than 3 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Get the Expected Product Quantity after adding to the cart-------------------------\r",
+							"const expectedTotalQty = pm.collectionVariables.get(\"post_cart_qty\");\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Get the Actual Product Quantity after adding to the cart---------------------------\r",
+							"//Null Value handler. Set default 0 instead of null for empty cart\r",
+							"let actualTotalQty = 0;\r",
+							"try{\r",
+							"    actualTotalQty = responseBody.eContext.graphqlResponse.e113c071ghmj8fxbn1.totalQty;\r",
+							"}catch(err){\r",
+							"    console.log(\"There is no product in the cart currently\");\r",
+							"    actualTotalQty = 0;\r",
+							"}\r",
+							"console.log(`After Add to cart, Products Currently in the cart is: ${actualTotalQty}`);\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"pm.test(\"TCS-18: Validate Expected/Input and Actual/Output (Product-Quantity) after add to cart\", ()=>{\r",
+							"    pm.expect(expectedTotalQty).to.equal(actualTotalQty);\r",
+							"    //pm.expect(expectedTotalQty, `Expected Quantity ${expectedTotalQty}`).to.equal(actualTotalQty);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Dynamically Save the remove API link to delete/remove the entire cart--------------\r",
+							"let removeApi = \"\";\r",
+							"try{\r",
+							"    removeApi = responseBody.eContext.graphqlResponse.e113c071ghmj8fxbn1.items[0].removeApi;\r",
+							"\r",
+							"\r",
+							"}catch(err){\r",
+							"    console.log(\"There is no product in the cart currently to delete\");\r",
+							"    removeApi = \"\";\r",
+							"}\r",
+							"pm.collectionVariables.set(\"remove_api\", removeApi);\r",
+							"//-----------------------------------------------------------------------------------\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0"
+					},
+					{
+						"key": "Accept",
+						"value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.5"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Referer",
+						"value": "https://demo.evershop.io/search?keyword=stainless"
+					},
+					{
+						"key": "Cookie",
+						"value": "sid=s%3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827%2F74jYjy%2BNpOqKGuigFluhQj8dPBmrLweIYR8Y"
+					},
+					{
+						"key": "Upgrade-Insecure-Requests",
+						"value": "1"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "document"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "navigate"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Sec-Fetch-User",
+						"value": "?1"
+					},
+					{
+						"key": "Priority",
+						"value": "u=0, i"
+					}
+				],
+				"url": {
+					"raw": "https://demo.evershop.io/cart?ajax=true",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"evershop",
+						"io"
+					],
+					"path": [
+						"cart"
+					],
+					"query": [
+						{
+							"key": "ajax",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Generated from cURL: curl.exe ^\"https://demo.evershop.io/cart^\" ^\n  -H ^\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0^\" ^\n  -H ^\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8^\" ^\n  -H ^\"Accept-Language: en-US,en;q=0.5^\" ^\n  -H ^\"Accept-Encoding: gzip, deflate, br, zstd^\" ^\n  -H ^\"Connection: keep-alive^\" ^\n  -H ^\"Referer: https://demo.evershop.io/search?keyword=stainless^\" ^\n  -H ^\"Cookie: sid=s^%^3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827^%^2F74jYjy^%^2BNpOqKGuigFluhQj8dPBmrLweIYR8Y^\" ^\n  -H ^\"Upgrade-Insecure-Requests: 1^\" ^\n  -H ^\"Sec-Fetch-Dest: document^\" ^\n  -H ^\"Sec-Fetch-Mode: navigate^\" ^\n  -H ^\"Sec-Fetch-Site: same-origin^\" ^\n  -H ^\"Sec-Fetch-User: ?1^\" ^\n  -H ^\"Priority: u=0, i^\""
+			},
+			"response": []
+		},
+		{
+			"name": "deleteFromCart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Convert the response body into pure JSON object to access properties---------------\r",
+							"const responseBody = pm.response.json();\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status code is 200 or not:\r",
+							"pm.test(\"TCS-19: Validate whether the DELETE_CART API Status Code is (200)\", ()=>{\r",
+							"    try {\r",
+							"        pm.expect(200).to.equal(pm.response.code);\r",
+							"    } catch (err) {\r",
+							"        pm.expect.fail(\"@Reason:- \" + err.message);\r",
+							"    }\r",
+							"});\r",
+							"//----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Test Whether the response status is ok or not--------------------------------------\r",
+							"pm.test(\"TCS-20: Validate whether the DELETE_CART API Status Message is (OK)\", ()=>{\r",
+							"    pm.expect(pm.response.status).to.equal(\"OK\");\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Check the Response time:-----------------------------------------------------------\r",
+							"pm.test(\"TCS-21: Verify the response time is less than 3 second\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(3000);\r",
+							"});\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Check the cart is truly deleted or not---------------------------------------------\r",
+							"pm.test(\"TCS-22: Validate whether the cart is truly Deleted or not\", ()=>{\r",
+							"   \tpm.expect(responseBody.data.item.errors).to.be.an(\"object\").that.is.empty;\r",
+							"})\r",
+							"//-----------------------------------------------------------------------------------\r",
+							"\r",
+							"//Clear all the collection variables for the fresh next iteration--------------------\r",
+							"pm.collectionVariables.unset(\"search_keyword\");\r",
+							"pm.collectionVariables.unset(\"product_sku\");\r",
+							"pm.collectionVariables.unset(\"pre_cart_qty\");\r",
+							"pm.collectionVariables.unset(\"added_product_qty\");\r",
+							"pm.collectionVariables.unset(\"post_cart_qty\");\r",
+							"pm.collectionVariables.unset(\"remove_api\");\r",
+							"//-----------------------------------------------------------------------------------"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if(!pm.collectionVariables.get (\"remove_api\")) { \r",
+							"    throw new Error(\"Remove API link is missing\"); \r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0"
+					},
+					{
+						"key": "Accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.5"
+					},
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip, deflate, br, zstd"
+					},
+					{
+						"key": "Referer",
+						"value": "https://demo.evershop.io/cart"
+					},
+					{
+						"key": "Origin",
+						"value": "https://demo.evershop.io"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Cookie",
+						"value": "sid=s%3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827%2F74jYjy%2BNpOqKGuigFluhQj8dPBmrLweIYR8Y"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "empty"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "cors"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "Priority",
+						"value": "u=0"
+					}
+				],
+				"url": {
+					"raw": "https://demo.evershop.io{{remove_api}}",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"evershop",
+						"io{{remove_api}}"
+					]
+				},
+				"description": "Generated from cURL: curl.exe ^\"https://demo.evershop.io/api/cart/df07532f-eff2-4fc8-a19d-aa11ada0b85a/items/34ac2636-5571-4d35-a01e-210dbdd12ea8^\" ^\n  -X DELETE ^\n  -H ^\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0^\" ^\n  -H ^\"Accept: */*^\" ^\n  -H ^\"Accept-Language: en-US,en;q=0.5^\" ^\n  -H ^\"Accept-Encoding: gzip, deflate, br, zstd^\" ^\n  -H ^\"Referer: https://demo.evershop.io/cart^\" ^\n  -H ^\"Origin: https://demo.evershop.io^\" ^\n  -H ^\"Connection: keep-alive^\" ^\n  -H ^\"Cookie: sid=s^%^3AZyXTOxJhM0xJglq-ewAhw26KTEYufOti.I5W827^%^2F74jYjy^%^2BNpOqKGuigFluhQj8dPBmrLweIYR8Y^\" ^\n  -H ^\"Sec-Fetch-Dest: empty^\" ^\n  -H ^\"Sec-Fetch-Mode: cors^\" ^\n  -H ^\"Sec-Fetch-Site: same-origin^\" ^\n  -H ^\"Priority: u=0^\""
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
